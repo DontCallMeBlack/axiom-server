@@ -1,0 +1,11 @@
+{
+  "name": "axiom-server-frontend-tools",
+  "version": "1.0.0",
+  "description": "Utility scripts for image optimization",
+  "scripts": {
+    "optimize-images": "node scripts/optimize-images.js ./loot-images ./frontend/public/loot-images"
+  },
+  "dependencies": {
+    "sharp": "^0.32.6"
+  }
+}

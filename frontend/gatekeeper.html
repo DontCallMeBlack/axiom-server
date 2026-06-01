@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axiom - Registration Gatekeeper</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#0c0d0e] text-slate-100 font-sans flex flex-col">
+  
+  <header class="bg-[#121416] border-b border-slate-800 shrink-0 shadow-lg">
+    <div class="px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">AXIOM</span>
+        <span class="text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded-md font-medium uppercase tracking-tight">Command Center</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div class="text-right">
+          <p class="text-sm font-semibold text-slate-200">Omar</p>
+          <p class="text-xs text-amber-500 font-medium">General</p>
+        </div>
+        <a href="signup.html" class="text-xs font-bold text-slate-500 hover:text-red-400 transition ml-2 border border-slate-700 hover:border-red-900/50 px-3 py-1.5 rounded bg-[#0c0d0e]">Logout</a>
+      </div>
+    </div>
+    <nav class="bg-[#0f1113] border-t border-slate-800 px-6 py-2 flex items-center space-x-6 overflow-x-auto">
+      <a href="index.html" class="text-sm font-semibold text-slate-400 hover:text-amber-400 transition whitespace-nowrap">Dashboard</a>
+      <a href="auction.html" class="text-sm font-semibold text-slate-400 hover:text-amber-400 transition whitespace-nowrap">Live Auction</a>
+      <a href="ledger.html" class="text-sm font-semibold text-slate-400 hover:text-amber-400 transition whitespace-nowrap">Public Ledger</a>
+      <div class="h-4 w-px bg-slate-700 hidden sm:block"></div>
+      <span class="text-[10px] font-black uppercase tracking-widest text-red-500 bg-red-950/30 px-2 py-0.5 rounded border border-red-900/50 hidden sm:block">Officer Ops</span>
+      <a href="queue.html" class="text-sm font-semibold text-red-400/80 hover:text-red-300 transition whitespace-nowrap">Approval Queue</a>
+      <a href="gatekeeper.html" class="text-sm font-semibold text-red-400 transition whitespace-nowrap">Gatekeeper</a>
+    </nav>
+  </header>
+
+  <div class="p-8 max-w-4xl mx-auto space-y-8 flex-1 w-full">
+    <header class="flex justify-between items-end border-b border-slate-800 pb-4">
+      <div>
+        <h1 class="text-3xl font-black text-slate-100 tracking-tight">Security Gatekeeper</h1>
+        <p class="text-sm text-slate-500 mt-1">Chief & General Access Only. Verify all recruits before granting ledger access.</p>
+      </div>
+      <div class="bg-red-950/30 border border-red-900/50 text-red-400 px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider">
+        3 Pending Approvals
+      </div>
+    </header>
+
+    <div class="bg-[#121416] border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+      <div class="grid grid-cols-12 gap-4 p-4 border-b border-slate-800 bg-[#0f1113] text-xs font-bold text-slate-500 uppercase tracking-wider">
+        <div class="col-span-3">Recruit Name</div>
+        <div class="col-span-3">Main Class</div>
+        <div class="col-span-3">Applied At</div>
+        <div class="col-span-3 text-right">Gatekeeper Action</div>
+      </div>
+
+      <div class="grid grid-cols-12 gap-4 p-4 items-center border-b border-slate-850 hover:bg-slate-800/30 transition">
+        <div class="col-span-3 font-bold text-slate-200">ShieldWall22</div>
+        <div class="col-span-3 flex items-center space-x-2">
+          <span class="h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>
+          <span class="text-red-400 font-semibold text-sm">Warrior</span>
+        </div>
+        <div class="col-span-3 text-xs text-slate-500">10 mins ago</div>
+        <div class="col-span-3 flex justify-end space-x-2">
+          <button class="px-3 py-1.5 rounded text-xs font-bold bg-transparent border border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700 transition">Deny</button>
+          <button class="px-3 py-1.5 rounded text-xs font-bold bg-slate-200 text-black hover:bg-white transition">Approve</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: axiom-server
+    env: docker
+    repo: <your-github-org-or-user>/<your-repo>
+    branch: main
+    plan: free
+    dockerfilePath: Dockerfile
+    buildCommand: ""
+    startCommand: "./axiom-server"
+    envVars:
+      - key: MONGO_URI
+        value: "${MONGO_URI}"

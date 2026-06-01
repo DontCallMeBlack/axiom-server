@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axiom - Public Ledger</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#0c0d0e] text-slate-100 font-sans flex flex-col">
+  
+  <header class="bg-[#121416] border-b border-slate-800 shrink-0 shadow-lg">
+    <div class="px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">AXIOM</span>
+        <span class="text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded-md font-medium uppercase tracking-tight">Command Center</span>
+      </div>
+        <div class="flex items-center space-x-4">
+        <div class="text-right">
+          <p id="header-username" class="text-sm font-semibold text-slate-200">...</p>
+          <p id="header-role" class="text-xs text-amber-500 font-medium">...</p>
+        </div>
+        <a href="signup.html" class="text-xs font-bold text-slate-500 hover:text-red-400 transition ml-2 border border-slate-700 hover:border-red-900/50 px-3 py-1.5 rounded bg-[#0c0d0e]">Logout</a>
+      </div>
+    </div>
+    <nav class="bg-[#0f1113] border-t border-slate-800 px-6 py-2 flex items-center space-x-6 overflow-x-auto">
+      <a href="index.html" class="text-sm font-semibold text-slate-400 hover:text-amber-400 transition whitespace-nowrap">Dashboard</a>
+      <a href="auction.html" class="text-sm font-semibold text-slate-400 hover:text-amber-400 transition whitespace-nowrap">Live Auction</a>
+      <a href="ledger.html" class="text-sm font-semibold text-amber-400 transition whitespace-nowrap">Public Ledger</a>
+      <div class="h-4 w-px bg-slate-700 hidden sm:block"></div>
+      <span class="text-[10px] font-black uppercase tracking-widest text-red-500 bg-red-950/30 px-2 py-0.5 rounded border border-red-900/50 hidden sm:block">Officer Ops</span>
+      <a href="queue.html" class="text-sm font-semibold text-red-400/80 hover:text-red-300 transition whitespace-nowrap">Approval Queue</a>
+      <a href="gatekeeper.html" class="text-sm font-semibold text-red-400/80 hover:text-red-300 transition whitespace-nowrap">Gatekeeper</a>
+    </nav>
+  </header>
+
+  <div class="p-6 max-w-7xl mx-auto space-y-6 flex-1 w-full">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-800 pb-5">
+      <div>
+        <h1 class="text-2xl font-black text-slate-100 tracking-tight">Public DKP Ledger</h1>
+        <p class="text-xs text-slate-400 mt-1">Real-time accounting, immutable audit trails, and 7-day rolling activity tracking.</p>
+      </div>
+      
+      <div class="flex flex-wrap items-center gap-3">
+        <input type="text" id="search-input" placeholder="Search character..." class="bg-[#121416] border border-slate-750 focus:border-amber-500 rounded-xl px-4 py-2 text-sm text-white outline-none w-48 transition-all">
+        <select id="class-filter" class="bg-[#121416] border border-slate-750 focus:border-amber-500 rounded-xl px-3 py-2 text-sm text-slate-300 outline-none transition-all">
+          <option value="all">All Classes</option>
+          <option value="warrior">Warrior</option>
+          <option value="druid">Druid</option>
+          <option value="mage">Mage</option>
+          <option value="ranger">Ranger</option>
+          <option value="rogue">Rogue</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="bg-[#121416] border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+      <div class="grid grid-cols-12 gap-4 p-4 border-b border-slate-850 bg-[#0f1113] text-xs font-bold text-slate-400 uppercase tracking-wider items-center">
+        <div class="col-span-2">Rank / Role</div>
+        <div class="col-span-3">Character Name</div>
+        <div class="col-span-2">Class</div>
+        <div class="col-span-2 text-right">7D Activity (Pooled)</div>
+        <div class="col-span-2 text-right">DKP Bank</div>
+        <div class="col-span-1 text-right">Audit</div>
+      </div>
+
+      <div id="ledger-rows" class="divide-y divide-slate-850"></div>
+    </div>
+  </div>
+
+  <div id="audit-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#121416] border border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-start border-b border-slate-800 pb-3">
+        <div>
+          <h3 class="text-lg font-bold text-slate-100">Audit History: <span id="modal-char-name" class="text-amber-400">Character</span></h3>
+          <p class="text-xs text-slate-500">Immutable 3-month timeline tracking scores and adjustments.</p>
+        </div>
+        <button onclick="closeAuditModal()" class="text-slate-500 hover:text-slate-300 text-xl font-bold font-mono p-1">&times;</button>
+      </div>
+
+      <div class="space-y-2 max-h-60 overflow-y-auto pr-1" id="modal-timeline">
+        <div class="flex items-center justify-between p-3 bg-[#0c0d0e] border border-slate-850 rounded-xl">
+          <div class="flex items-center space-x-3">
+            <div class="p-1.5 bg-emerald-500/10 text-emerald-400 rounded-lg text-xs">➕</div>
+            <div>
+              <p class="text-xs font-bold text-slate-200">Boss Kill: Proteus</p>
+              <p class="text-[10px] text-slate-500">Approved by Chief • May 31, 2026</p>
+            </div>
+          </div>
+          <span class="font-mono text-xs font-bold text-emerald-400">+15 DKP</span>
+        </div>
+
+        <div class="flex items-center justify-between p-3 bg-[#0c0d0e] border border-slate-850 rounded-xl">
+          <div class="flex items-center space-x-3">
+            <div class="p-1.5 bg-purple-500/10 text-purple-400 rounded-lg text-xs">🛡️</div>
+            <div>
+              <p class="text-xs font-bold text-slate-200">Auction Spend: Earthbark Helm</p>
+              <p class="text-[10px] text-slate-500">Automated Dispatch • May 28, 2026</p>
+            </div>
+          </div>
+          <span class="font-mono text-xs font-bold text-purple-400">-120 DKP</span>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-2 border-t border-slate-800">
+        <button onclick="closeAuditModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl text-slate-300 transition">Close History</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Fetch current user (demo chief) and populate header
+    (async function(){
+      try {
+        const res = await fetch('/api/me');
+        if (res.ok) {
+          const data = await res.json();
+          window.currentUser = data;
+          document.getElementById('header-username').innerText = data.char_name || data.username || 'chief';
+          document.getElementById('header-role').innerText = (data.role || '').toUpperCase() || '';
+        }
+      } catch (e) { console.warn('Could not fetch /api/me', e); }
+    })();
+    function openAuditModal(charName) {
+      document.getElementById('modal-char-name').innerText = charName;
+      document.getElementById('audit-modal').classList.remove('hidden');
+    }
+
+    function closeAuditModal() {
+      document.getElementById('audit-modal').classList.add('hidden');
+    }
+
+    // Dynamic filtering interface logic
+    const searchInput = document.getElementById('search-input');
+    const classFilter = document.getElementById('class-filter');
+    const rowsContainer = document.getElementById('ledger-rows');
+
+    function filterTable() {
+      const searchVal = searchInput.value.toLowerCase();
+      const classVal = classFilter.value.toLowerCase();
+      const rows = rowsContainer.children;
+
+      for (let row of rows) {
+        const charName = row.querySelector('.col-span-3').innerText.toLowerCase();
+        const gameClass = row.querySelector('.col-span-2 span:last-child').innerText.toLowerCase();
+        
+        const matchesSearch = charName.includes(searchVal);
+        const matchesClass = classVal === 'all' || gameClass === classVal;
+
+        if (matchesSearch && matchesClass) {
+          row.style.display = 'grid';
+        } else {
+          row.style.display = 'none';
+        }
+      }
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    classFilter.addEventListener('change', filterTable);
+    
+    // Render ledger rows from API
+    async function loadLedger() {
+      try {
+        const res = await fetch('/api/ledger');
+        if (!res.ok) throw new Error('Failed to load ledger');
+        const data = await res.json();
+
+        const container = document.getElementById('ledger-rows');
+        container.innerHTML = '';
+
+        data.forEach(entry => {
+          const row = document.createElement('div');
+          row.className = 'grid grid-cols-12 gap-4 p-4 items-center hover:bg-slate-800/20 transition-all';
+
+          const roleLabel = (entry.role || 'Clansman');
+          const roleClass = roleLabel.toLowerCase() === 'chief' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-slate-800 text-slate-400 border-slate-700';
+
+          const eligible = entry.pooled_activity >= 300;
+
+          row.innerHTML = `
+            <div class="col-span-2">
+              <span class="${roleClass} text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wide">${roleLabel}</span>
+            </div>
+            <div class="col-span-3 font-bold text-slate-200">${entry.char_name}</div>
+            <div class="col-span-2 flex items-center space-x-2">
+              <span class="h-2 w-2 rounded-full ${classColor(entry.game_class)}"></span>
+              <span class="text-${classTextColor(entry.game_class)} text-xs font-semibold">${capitalize(entry.game_class)}</span>
+            </div>
+            <div class="col-span-2 text-right">
+              <span class="${eligible ? 'text-emerald-400' : 'text-red-400'} font-mono font-bold text-sm">${entry.pooled_activity} DKP</span>
+              <p class="text-[10px] text-slate-500">${eligible ? 'Eligible (≥300)' : 'Locked (<300)'}</p>
+            </div>
+            <div class="col-span-2 text-right text-amber-400 font-black font-mono text-base">${entry.available_dkp}</div>
+            <div class="col-span-1 flex justify-end">
+              <button onclick="openAuditModal('${entry.char_name}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 hover:text-white text-xs font-semibold text-slate-300 rounded-lg border border-slate-700 transition shadow-sm">View</button>
+            </div>
+          `;
+
+          // attach metadata for filtering
+          container.appendChild(row);
+        });
+
+        filterTable();
+      } catch (err) {
+        console.error('Ledger load error', err);
+      }
+    }
+
+    function classColor(cls){
+      switch((cls||'').toLowerCase()){
+        case 'warrior': return 'bg-red-500';
+        case 'druid': return 'bg-green-500';
+        case 'mage': return 'bg-purple-500';
+        case 'ranger': return 'bg-blue-400';
+        case 'rogue': return 'bg-yellow-400';
+        default: return 'bg-slate-600';
+      }
+    }
+    function classTextColor(cls){
+      switch((cls||'').toLowerCase()){
+        case 'warrior': return 'red-400';
+        case 'druid': return 'green-400';
+        case 'mage': return 'purple-400';
+        case 'ranger': return 'blue-300';
+        case 'rogue': return 'yellow-300';
+        default: return 'slate-400';
+      }
+    }
+    function capitalize(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : s }
+
+    // Initial load
+    loadLedger();
+  </script>
+</body>
+</html>

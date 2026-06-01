@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axiom - Approval Queue</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="h-screen bg-[#0c0d0e] text-slate-100 font-sans flex flex-col overflow-hidden">
+  
+  <header class="bg-[#121416] border-b border-slate-800 shrink-0 shadow-lg">
+    <div class="px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">AXIOM</span>
+        <span class="text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded-md font-medium uppercase tracking-tight">Command Center</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div class="text-right">
+          <p id="header-username" class="text-sm font-semibold text-slate-200">...</p>
+          <p id="header-role" class="text-xs text-amber-500 font-medium">...</p>
+        </div>
+        <a href="signup.html" class="text-xs font-bold text-slate-500 hover:text-red-400 transition ml-2 border border-slate-700 hover:border-red-900/50 px-3 py-1.5 rounded bg-[#0c0d0e]">Logout</a>
+      </div>
+    </div>
+    <nav class="bg-[#0f1113] border-t border-slate-800 px-6 py-2 flex items-center space-x-6 overflow-x-auto">
+      <a href="index.html" class="text-sm font-semibold text-slate-400 hover:text-amber-400 transition whitespace-nowrap">Dashboard</a>
+      <a href="auction.html" class="text-sm font-semibold text-slate-400 hover:text-amber-400 transition whitespace-nowrap">Live Auction</a>
+      <a href="ledger.html" class="text-sm font-semibold text-slate-400 hover:text-amber-400 transition whitespace-nowrap">Public Ledger</a>
+      <div class="h-4 w-px bg-slate-700 hidden sm:block"></div>
+      <span class="text-[10px] font-black uppercase tracking-widest text-red-500 bg-red-950/30 px-2 py-0.5 rounded border border-red-900/50 hidden sm:block">Officer Ops</span>
+      <a href="queue.html" class="text-sm font-semibold text-red-400 transition whitespace-nowrap">Approval Queue</a>
+      <a href="gatekeeper.html" class="text-sm font-semibold text-red-400/80 hover:text-red-300 transition whitespace-nowrap">Gatekeeper</a>
+    </nav>
+  </header>
+
+  <div class="flex-1 flex overflow-hidden">
+    <aside class="w-1/3 max-w-md bg-[#121416] border-r border-slate-800 flex flex-col">
+      <div class="p-4 border-b border-slate-800 bg-[#0f1113]">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 flex justify-between items-center">
+          <span>Pending Approvals</span>
+          <span class="bg-amber-500 text-black px-2 py-0.5 rounded-full text-xs font-black">2</span>
+        </h2>
+      </div>
+      <div class="flex-1 overflow-y-auto p-3 space-y-2">
+        <div class="bg-slate-800/50 border-l-4 border-amber-500 p-4 rounded-r-xl cursor-pointer">
+          <div class="flex justify-between items-start">
+            <h3 class="font-bold text-slate-100">Proteus Kill</h3>
+            <span class="text-xs text-slate-400">03:15 AM</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-1">Submitted by: <span class="text-slate-200 font-semibold">Xanthor</span></p>
+          <div class="mt-3 inline-flex items-center space-x-1 bg-red-500/10 text-red-400 px-2 py-1 rounded text-[10px] font-bold border border-red-500/20">
+            <span>⚠️</span><span>Spawn Time Anomaly Detected</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col bg-[#0c0d0e] relative">
+      <div class="flex-1 overflow-y-auto p-10">
+        <div class="max-w-2xl mx-auto space-y-8">
+          <div>
+            <h1 class="text-3xl font-black text-slate-100 tracking-tight">Proteus</h1>
+            <p class="text-sm text-slate-400 mt-1">Logged on May 31, 2026 at 03:15 AM</p>
+          </div>
+          <div class="bg-red-950/20 border border-red-900/50 rounded-xl p-5 shadow-inner">
+            <h4 class="text-red-400 font-bold text-xs uppercase tracking-wider mb-2">System Analysis</h4>
+            <p class="text-sm text-red-200/80">
+              The logged time of death (03:15 AM) occurred 45 minutes before the expected spawn window. Please verify before approving.
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+      <script>
+        // Fetch current user (demo chief) and populate header
+        (async function(){
+          try {
+            const res = await fetch('/api/me');
+            if (res.ok) {
+              const data = await res.json();
+              window.currentUser = data;
+              document.getElementById('header-username').innerText = data.char_name || data.username || 'chief';
+              document.getElementById('header-role').innerText = (data.role || '').toUpperCase() || '';
+            }
+          } catch (e) { console.warn('Could not fetch /api/me', e); }
+        })();
+      </script>
+</body>
+</html>

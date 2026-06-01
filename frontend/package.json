@@ -1,0 +1,11 @@
+{
+  "name": "axiom-frontend-api",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "mongodb": "^5.13.0"
+  }
+}

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axiom Command Center</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#0c0d0e] text-slate-100 font-sans flex flex-col relative overflow-x-hidden">
+  
+  <header class="bg-[#121416] border-b border-slate-800 shrink-0 shadow-lg z-40 relative">
+    <div class="px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">AXIOM</span>
+        <span class="text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded-md font-medium uppercase tracking-tight">Command Center</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button onclick="openLogModal()" class="bg-emerald-950/30 border border-emerald-900/50 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/50 transition px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider mr-4 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+          + Log a Kill
+        </button>
+
+        <div class="text-right">
+          <p id="header-username" class="text-sm font-semibold text-slate-200">...</p>
+          <p id="header-role" class="text-xs text-amber-500 font-medium">...</p>
+        </div>
+      </div>
+    </div>
+    <nav class="bg-[#0f1113] border-t border-slate-800 px-6 py-2 flex items-center space-x-6 overflow-x-auto">
+      <a href="index.html" class="text-sm font-semibold text-amber-400 transition whitespace-nowrap">Dashboard</a>
+      <a href="auction.html" class="text-sm font-semibold text-slate-400 hover:text-amber-400 transition whitespace-nowrap">Live Auction</a>
+      <a href="ledger.html" class="text-sm font-semibold text-slate-400 hover:text-amber-400 transition whitespace-nowrap">Public Ledger</a>
+      <div class="h-4 w-px bg-slate-700 hidden sm:block"></div>
+      <span class="text-[10px] font-black uppercase tracking-widest text-red-500 bg-red-950/30 px-2 py-0.5 rounded border border-red-900/50 hidden sm:block">Officer Ops</span>
+      <a href="queue.html" class="text-sm font-semibold text-red-400/80 hover:text-red-300 transition whitespace-nowrap">Approval Queue</a>
+    </nav>
+  </header>
+
+  <main class="flex-1 p-8 max-w-7xl mx-auto w-full space-y-8">
+    <div>
+      <h1 class="text-3xl font-black text-slate-100 tracking-tight">Welcome to Axiom</h1>
+      <p class="text-sm text-slate-500 mt-1">Select a module from the navigation bar to manage clan operations.</p>
+    </div>
+  </main>
+
+  <div id="log-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#121416] border border-slate-700 rounded-2xl max-w-lg w-full p-8 shadow-2xl flex flex-col max-h-[90vh]">
+      <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4 shrink-0">
+        <div>
+          <h2 class="text-2xl font-black text-slate-100">Log Boss Kill</h2>
+          <p class="text-sm text-slate-400">Select the target and add attendees.</p>
+        </div>
+        <button onclick="closeLogModal()" class="text-slate-500 hover:text-white text-3xl font-mono pb-2">&times;</button>
+      </div>
+
+      <div class="space-y-6 overflow-y-auto pr-2 flex-1">
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Target Selection</label>
+          <select id="boss-select" class="w-full bg-[#0a0b0c] border border-slate-700 rounded-lg px-4 py-3 text-amber-400 font-mono font-bold outline-none focus:border-emerald-500 transition shadow-inner">
+            <option value="" disabled selected>-- Select Shorthand --</option>
+            <optgroup label="High End Bosses">
+              <option value="Gele">/gele (50 DKP)</option>
+              <option value="Dino">/dino (65 DKP)</option>
+              <option value="Prime">/prime (25 DKP)</option>
+              <option value="Necro">/necro (20 DKP)</option>
+              <option value="Aggy">/aggy (5 DKP)</option>
+            </optgroup>
+            <optgroup label="Exalted Dragon Lord (EDL)">
+              <option value="EDL_215_6">215.6 (EDL 6-Star)</option>
+              <option value="EDL_215_5">215.5 (EDL 5-Star)</option>
+              <option value="EDL_210_6">210.6 (EDL 6-Star)</option>
+              <option value="EDL_210_5">210.5 (EDL 5-Star)</option>
+            </optgroup>
+            <optgroup label="Dragon Lord (DL)">
+              <option value="DL_165_6">165.6 (DL 6-Star)</option>
+              <option value="DL_160_5">160.5 (DL 5-Star)</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="space-y-1.5 relative">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex justify-between">
+            <span>Attendees</span>
+            <span id="attendee-count" class="text-emerald-500">0 added</span>
+          </label>
+          
+          <div class="bg-[#0a0b0c] border border-slate-700 rounded-lg p-2 min-h-[50px] shadow-inner focus-within:border-emerald-500 transition flex flex-wrap gap-2 items-start">
+            <div id="selected-attendees" class="flex flex-wrap gap-2"></div>
+            
+            <input type="text" id="attendee-input" placeholder="Type name..." autocomplete="off"
+                   class="flex-1 bg-transparent outline-none text-slate-200 px-2 py-1 min-w-[120px] text-sm">
+          </div>
+
+          <div id="suggestions-box" class="absolute z-10 w-full bg-[#1a1c1e] border border-slate-700 rounded-lg mt-1 shadow-2xl hidden max-h-48 overflow-y-auto">
+            </div>
+        </div>
+      </div>
+
+      <div class="pt-6 mt-4 border-t border-slate-800 shrink-0">
+        <button onclick="submitKillLog()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black px-6 py-3 rounded-xl transition shadow-[0_0_15px_rgba(16,185,129,0.4)]">
+          SEND TO ESCROW
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- SMART AUTO-COMPLETE LOGIC ---
+    // Fetch current user (demo chief) and apply to UI
+    (async function(){
+      try {
+        const res = await fetch('/api/me');
+        if (res.ok) {
+          const data = await res.json();
+          window.currentUser = data;
+          document.getElementById('header-username').innerText = data.char_name || data.username || 'chief';
+          document.getElementById('header-role').innerText = (data.role || '').toUpperCase() || '';
+        }
+      } catch (e) { console.warn('Could not fetch /api/me', e); }
+    })();
+    
+    // Mock Database of Clan Members
+    const clanRoster = [
+      "ShieldWall", "NatureHeals", "ArcaneFire", "Xanthor", 
+      "Elva", "Demos", "Tabulas", "Neveon", "Crimson", "Oogway"
+    ];
+    
+    let selectedAttendees = [];
+    const inputEl = document.getElementById('attendee-input');
+    const suggestionsBox = document.getElementById('suggestions-box');
+    const tagsContainer = document.getElementById('selected-attendees');
+    const countEl = document.getElementById('attendee-count');
+
+    // 1. Listen for typing
+    inputEl.addEventListener('input', function() {
+      const val = this.value.toLowerCase().trim();
+      suggestionsBox.innerHTML = '';
+      
+      if (!val) {
+        suggestionsBox.classList.add('hidden');
+        return;
+      }
+
+      // Find matches not already selected
+      const matches = clanRoster.filter(name => 
+        name.toLowerCase().includes(val) && !selectedAttendees.includes(name)
+      );
+
+      if (matches.length > 0) {
+        suggestionsBox.classList.remove('hidden');
+        matches.forEach(name => {
+          const div = document.createElement('div');
+          div.className = "px-4 py-2 hover:bg-emerald-900/40 text-slate-200 cursor-pointer text-sm border-b border-slate-800/50 last:border-0";
+          
+          // Highlight the matching letters
+          const regex = new RegExp(`(${val})`, "gi");
+          div.innerHTML = name.replace(regex, "<span class='text-emerald-400 font-bold'>$1</span>");
+          
+          div.onclick = () => addAttendee(name);
+          suggestionsBox.appendChild(div);
+        });
+      } else {
+        suggestionsBox.classList.add('hidden');
+      }
+    });
+
+    // Hide suggestions if clicking outside
+    document.addEventListener('click', function(e) {
+      if (e.target !== inputEl && e.target !== suggestionsBox) {
+        suggestionsBox.classList.add('hidden');
+      }
+    });
+
+    // 2. Add an attendee tag
+    function addAttendee(name) {
+      if (!selectedAttendees.includes(name)) {
+        selectedAttendees.push(name);
+        renderTags();
+      }
+      inputEl.value = '';
+      suggestionsBox.classList.add('hidden');
+      inputEl.focus();
+    }
+
+    // 3. Remove an attendee tag
+    function removeAttendee(name) {
+      selectedAttendees = selectedAttendees.filter(n => n !== name);
+      renderTags();
+    }
+
+    // 4. Render the visual tags
+    function renderTags() {
+      tagsContainer.innerHTML = '';
+      countEl.innerText = `${selectedAttendees.length} added`;
+      
+      selectedAttendees.forEach(name => {
+        const tag = document.createElement('span');
+        tag.className = "bg-emerald-900/30 border border-emerald-800/50 text-emerald-400 text-xs font-bold px-2 py-1 rounded flex items-center space-x-1";
+        tag.innerHTML = `
+          <span>${name}</span>
+          <button onclick="removeAttendee('${name}')" class="text-emerald-600 hover:text-emerald-300 ml-1 font-black">&times;</button>
+        `;
+        tagsContainer.appendChild(tag);
+      });
+    }
+
+    // --- MODAL & SUBMISSION LOGIC ---
+
+    function openLogModal() {
+      document.getElementById('log-modal').classList.remove('hidden');
+      inputEl.focus();
+    }
+
+    function closeLogModal() {
+      document.getElementById('log-modal').classList.add('hidden');
+      document.getElementById('boss-select').value = "";
+      selectedAttendees = [];
+      inputEl.value = '';
+      renderTags();
+    }
+
+    async function submitKillLog() {
+      const selectEl = document.getElementById('boss-select');
+      const bossID = selectEl.value;
+      const bossFormat = selectEl.options[selectEl.selectedIndex]?.text.split(' ')[0]; // Grabs just the "/gele" or "210.5" part
+
+      if (!bossID) return alert("Please select a target.");
+      if (selectedAttendees.length === 0) return alert("You must add at least one attendee.");
+
+      const payload = {
+        boss_id: bossID,
+        boss_format: bossFormat,
+        attendees: selectedAttendees,
+        logged_by: (window.currentUser && window.currentUser.char_name) || "chief"
+      };
+
+      try {
+        const res = await fetch('/api/log_kill', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if (res.ok) {
+          alert(`Success! Logged ${bossFormat} with ${selectedAttendees.length} attendees.`);
+          closeLogModal();
+        }
+      } catch (err) {
+        console.error("Failed to log kill:", err);
+      }
+    }
+  </script>
+</body>
+</html>

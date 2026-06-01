@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axiom - Live Auction</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-[#0c0d0e] text-slate-100 font-sans flex flex-col relative overflow-x-hidden">
+  
+  <header class="bg-[#121416] border-b border-slate-800 shrink-0 shadow-lg sticky top-0 z-40">
+    <div class="px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">AXIOM</span>
+        <span class="text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded-md font-medium uppercase tracking-tight">Active Drops</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button onclick="openDropModal()" class="bg-red-950/30 border border-red-900/50 text-red-400 hover:text-red-300 hover:bg-red-900/50 transition px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider mr-4 shadow-[0_0_10px_rgba(239,68,68,0.2)]">
+          + Post a Drop (Officer)
+        </button>
+        
+        <div class="flex items-center space-x-2 bg-[#0c0d0e] border border-slate-700 rounded-lg p-1 mr-4">
+          <span class="text-xs text-slate-500 font-bold px-2 uppercase tracking-wider">Bidding For:</span>
+          <select id="active-char" class="bg-slate-800 text-sm font-bold text-white px-3 py-1 rounded outline-none border border-slate-600 focus:border-amber-500 transition">
+            <option value="ShieldWall">ShieldWall (Warrior - Main)</option>
+            <option value="NatureHeals" selected>NatureHeals (Druid - Alt)</option>
+          </select>
+        </div>
+        <div class="text-right">
+          <p id="header-username" class="text-sm font-semibold text-slate-200">...</p>
+          <p id="header-role" class="text-xs text-amber-500 font-medium">...</p>
+        </div>
+      </div>
+    </div>
+    <nav class="bg-[#0f1113] border-t border-slate-800 px-6 py-2 flex items-center space-x-6 overflow-x-auto">
+      <a href="index.html" class="text-sm font-semibold text-slate-400 hover:text-amber-400 transition">Dashboard</a>
+      <a href="auction.html" class="text-sm font-semibold text-amber-400 transition">Live Auction</a>
+      <a href="ledger.html" class="text-sm font-semibold text-slate-400 hover:text-amber-400 transition">Public Ledger</a>
+    </nav>
+  </header>
+
+  <main class="flex-1 p-6 overflow-y-auto">
+    <div id="no-auction-state" class="text-center mt-32 space-y-4 hidden">
+      <div class="text-6xl mb-4 opacity-50">🗡️</div>
+      <h2 class="text-2xl font-black text-slate-500 uppercase tracking-widest">No Active Drops</h2>
+      <p class="text-slate-600 text-sm">Waiting for an Officer to post new loot.</p>
+    </div>
+
+    <div id="auctions-grid" class="flex flex-col items-center space-y-12 max-w-lg mx-auto pb-20 mt-4">
+      </div>
+  </main>
+
+  <div id="drop-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#121416] border border-slate-700 rounded-2xl max-w-lg w-full p-8 shadow-2xl">
+      <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-2xl font-black text-slate-100">Post a New Drop</h2>
+          <p class="text-sm text-slate-400">Select an item from the database to start a 24-hour auction.</p>
+        </div>
+        <button onclick="closeDropModal()" class="text-slate-500 hover:text-white text-3xl font-mono pb-2">&times;</button>
+      </div>
+
+      <div class="space-y-5 mb-8">
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Select Loot Item</label>
+          <select id="drop-item" class="w-full bg-[#0a0b0c] border border-slate-700 rounded-lg px-4 py-3 text-slate-200 outline-none focus:border-amber-500 transition">
+            <option value="" disabled selected>Loading database items...</option>
+          </select>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Class Restriction</label>
+          <select id="drop-class" class="w-full bg-[#0a0b0c] border border-slate-700 rounded-lg px-4 py-3 text-slate-200 outline-none focus:border-amber-500 transition">
+            <option value="all">Any Class</option>
+            <option value="warrior">Warrior</option>
+            <option value="druid">Druid</option>
+            <option value="mage">Mage</option>
+            <option value="ranger">Ranger</option>
+            <option value="rogue">Rogue</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button onclick="startAuction()" class="w-full bg-red-600 hover:bg-red-500 text-white font-black px-6 py-3 rounded-xl transition shadow-[0_0_15px_rgba(220,38,38,0.4)]">
+          LAUNCH AUCTION
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeAuctionsData = {};
+    let availableLoot = [];
+
+    // Fetch current user (demo chief) and populate header
+    (async function(){
+      try {
+        const res = await fetch('/api/me');
+        if (res.ok) {
+          const data = await res.json();
+          window.currentUser = data;
+          document.getElementById('header-username').innerText = data.char_name || data.username || 'chief';
+          document.getElementById('header-role').innerText = (data.role || '').toUpperCase() || '';
+        }
+      } catch (e) { console.warn('Could not fetch /api/me', e); }
+    })();
+
+    // Polling-based updates (replaces WebSocket for Vercel serverless)
+    let lastEventTime = new Date(0).toISOString();
+
+    async function pollAuctions() {
+      try {
+        const res = await fetch('/api/auctions_active');
+        if (!res.ok) return;
+        const auctions = await res.json();
+        // clear and render fresh
+        const grid = document.getElementById('auctions-grid');
+        grid.innerHTML = '';
+        if (auctions && auctions.length > 0) {
+          auctions.forEach(auc => renderAuctionCard(auc));
+        }
+        toggleEmptyState();
+      } catch (e) { console.warn('pollAuctions error', e); }
+    }
+
+    async function pollEvents() {
+      try {
+        const res = await fetch('/api/events?since=' + encodeURIComponent(lastEventTime));
+        if (!res.ok) return;
+        const events = await res.json();
+        for (const ev of events) {
+          if (ev.type === 'new_bid') {
+            updateBidDisplay(ev.auction_id, ev.amount, ev.char_name);
+          }
+          if (ev.type === 'auction_started') {
+            await pollAuctions();
+          }
+          if (ev.ts) lastEventTime = new Date(ev.ts).toISOString();
+        }
+      } catch (e) { console.warn('pollEvents error', e); }
+    }
+
+    // initial load + start polling
+    (async function(){ await pollAuctions(); pollEvents(); setInterval(pollAuctions, 5000); setInterval(pollEvents, 2500); })();
+
+    function toggleEmptyState() {
+      const grid = document.getElementById('auctions-grid');
+      const emptyState = document.getElementById('no-auction-state');
+      if (grid.children.length === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+      }
+    }
+
+    // UPDATED: Instagram-style Centered Card Design
+    function renderAuctionCard(auction) {
+      activeAuctionsData[auction.id] = auction.highest_bid;
+      const grid = document.getElementById('auctions-grid');
+      
+      const card = document.createElement('div');
+      card.id = `card-${auction.id}`;
+      // Max-width locks the card size, border styling makes it pop
+      card.className = "bg-[#121416] border border-slate-700 rounded-2xl shadow-2xl relative overflow-hidden w-full max-w-sm flex flex-col";
+      
+      card.innerHTML = `
+        <div class="px-5 py-3 border-b border-slate-800/80 bg-[#0f1113] flex justify-between items-center z-10 relative">
+           <span class="text-xs font-bold text-slate-400">Posted by: <span class="text-slate-100">${auction.holder_name}</span></span>
+           <span class="text-[9px] font-black uppercase tracking-widest text-green-400 bg-green-900/30 px-2 py-1 rounded border border-green-800/50 shadow-inner">
+              ${auction.class_restriction.toUpperCase()}
+           </span>
+        </div>
+
+        <div class="w-full aspect-square bg-black/50 flex items-center justify-center p-6 relative overflow-hidden">
+           <div class="absolute inset-0 bg-gradient-to-tr from-purple-900/20 to-transparent"></div>
+           <img src="${auction.image_url}" class="max-h-full max-w-full object-contain drop-shadow-[0_0_25px_rgba(168,85,247,0.5)] relative z-10" alt="${auction.item_name}" onerror="this.src='/loot-images/placeholder.webp'; this.alt='No Image';">
+        </div>
+
+        <div class="p-6 relative z-10">
+           <h2 class="text-2xl font-black text-purple-400 tracking-tight drop-shadow-md text-center mb-6 leading-tight">${auction.item_name}</h2>
+           
+           <div class="flex justify-between items-end mb-6">
+             <div>
+               <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Highest Bid</p>
+               <div id="bid-amount-${auction.id}" class="text-5xl font-black text-amber-400 tracking-tighter drop-shadow-[0_0_15px_rgba(251,191,36,0.3)] leading-none">
+                 ${auction.highest_bid}
+               </div>
+             </div>
+             <div class="text-right">
+               <p id="bid-holder-${auction.id}" class="text-sm text-slate-300 font-semibold max-w-[140px] truncate leading-tight">Held by:<br><span class="text-white">${auction.highest_bidder}</span></p>
+             </div>
+           </div>
+
+           <div class="flex space-x-3 pt-5 border-t border-slate-800/80">
+              <input type="number" id="custom-bid-${auction.id}" placeholder="Enter DKP" min="1" step="1"
+                     oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                     class="w-full bg-[#0a0b0c] border border-slate-600 rounded-xl px-4 py-3 text-lg font-black text-amber-400 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 text-center shadow-inner placeholder-slate-600 transition">
+              <button onclick="placeBid('${auction.id}')" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-black px-6 py-3 rounded-xl transition active:scale-95 shadow-[0_0_15px_rgba(217,119,6,0.4)]">
+                BID
+              </button>
+           </div>
+        </div>
+      `;
+      
+      // Prepend so new auctions show up at the top of the feed
+      grid.prepend(card);
+    }
+
+    function updateBidDisplay(auctionId, amount, bidder) {
+      activeAuctionsData[auctionId] = amount;
+      const amtEl = document.getElementById(`bid-amount-${auctionId}`);
+      const holderEl = document.getElementById(`bid-holder-${auctionId}`);
+      
+      if (amtEl && holderEl) {
+        amtEl.innerText = amount;
+        holderEl.innerHTML = `Held by:<br><span class="text-white">${bidder}</span>`;
+        
+        amtEl.classList.add('text-white');
+        setTimeout(() => amtEl.classList.remove('text-white'), 300);
+      }
+    }
+
+    async function placeBid(auctionId) {
+      const inputEl = document.getElementById(`custom-bid-${auctionId}`);
+      const rawVal = inputEl.value;
+
+      if (!rawVal) return alert("Please enter a valid DKP amount.");
+      
+      const newBid = parseInt(rawVal, 10);
+      if (isNaN(newBid) || newBid <= 0) return alert("Bid must be a whole number greater than 0.");
+
+      const charName = document.getElementById('active-char').value;
+
+      const res = await fetch('/api/bid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ auction_id: auctionId, char_name: charName, bid_amount: newBid })
+      });
+      
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error);
+      } else {
+        inputEl.value = ''; // Clear input field upon successful bid
+      }
+    }
+
+    async function openDropModal() {
+      document.getElementById('drop-modal').classList.remove('hidden');
+      const dropdown = document.getElementById('drop-item');
+      dropdown.innerHTML = '<option value="" disabled selected>Loading database items...</option>';
+      
+      try {
+        const res = await fetch('/api/loot');
+        if (!res.ok) throw new Error("Server returned status: " + res.status);
+        
+        availableLoot = await res.json();
+        dropdown.innerHTML = '<option value="" disabled selected>-- Select an Item --</option>';
+        
+        if (availableLoot && availableLoot.length > 0) {
+          availableLoot.forEach((item, index) => {
+            const opt = document.createElement('option');
+            opt.value = index; 
+            opt.innerText = item.name;
+            dropdown.appendChild(opt);
+          });
+        } else {
+          dropdown.innerHTML = '<option value="" disabled selected>No items found in loot-images folder</option>';
+        }
+      } catch (err) {
+        console.error("Loot Fetch Error:", err);
+        dropdown.innerHTML = '<option value="" disabled selected>Error loading items. Press F12 for details.</option>';
+      }
+    }
+
+    function closeDropModal() {
+      document.getElementById('drop-modal').classList.add('hidden');
+    }
+
+    async function startAuction() {
+      const selectedIndex = document.getElementById('drop-item').value;
+      if (selectedIndex === "") return alert("Please select an item first.");
+      
+      const selectedLootItem = availableLoot[selectedIndex];
+      
+      const holder = (window.currentUser && window.currentUser.char_name) ? (window.currentUser.char_name + " (" + (window.currentUser.role||'') + ")") : 'chief';
+      const payload = {
+        item_name: selectedLootItem.name,
+        image_url: selectedLootItem.image_url,
+        holder_name: holder,
+        class_restriction: document.getElementById('drop-class').value
+      };
+
+      await fetch('/api/auction_start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      closeDropModal();
+    }
+  </script>
+</body>
+</html>
